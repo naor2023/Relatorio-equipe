@@ -11,15 +11,31 @@
     <strong>Registro do Vigia</strong>
     <nav><a href="/historico.html">Historico</a><button id="logoutBtn">Sair</button></nav>
   </header>
-  <main class="mobile-shell">
-    <section class="panel">
-      <h1>Nova ocorrencia</h1>
+  <main class="mobile-shell field-report-shell">
+    <section class="field-hero">
+      <div>
+        <span class="form-eyebrow">Ronda em campo</span>
+        <h1>Nova ocorrencia</h1>
+        <p>Preencha as informacoes principais. A Central recebe o alerta automaticamente assim que o registro for enviado.</p>
+      </div>
+      <div class="field-status">
+        <strong>Status inicial</strong>
+        <span>Nova ocorrencia</span>
+      </div>
+    </section>
+    <section class="panel field-card">
       <form id="occurrenceForm">
         <label>Nome do colaborador<input name="collaborator_name" required></label>
-        <label>Local da ocorrencia<select name="location" required></select></label>
-        <label>Tipo da ocorrencia<select name="type" required></select></label>
+        <div class="form-row">
+          <label>Local da ocorrencia<select name="location" required></select></label>
+          <label>Tipo da ocorrencia<select name="type" required></select></label>
+        </div>
         <label>Descricao detalhada<textarea name="description" rows="6" required></textarea></label>
-        <label>Foto ou video<input name="attachment" type="file" accept="image/*,video/*"></label>
+        <label class="upload-box">
+          <span>Foto ou video</span>
+          <input name="attachment" type="file" accept="image/*,video/*">
+          <small>Anexe uma imagem ou video quando isso ajudar a Central a avaliar a situacao.</small>
+        </label>
         <button class="primary" type="submit">Enviar ocorrencia</button>
         <output id="formMessage"></output>
       </form>

@@ -217,6 +217,84 @@ output { display: block; margin-top: 12px; color: var(--accent); }
 }
 .mobile-shell, .page { padding: 24px 14px; display: grid; justify-items: center; }
 .mobile-shell .panel { max-width: 620px; }
+.field-report-shell {
+  width: min(1120px, calc(100vw - 28px));
+  grid-template-columns: .88fr 1.12fr;
+  gap: 18px;
+  align-items: start;
+  margin: 0 auto;
+  padding-top: 36px;
+}
+.field-hero {
+  width: 100%;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(148,163,184,.16);
+  border-radius: 8px;
+  padding: 28px;
+  background:
+    linear-gradient(180deg, rgba(13,25,43,.92), rgba(8,15,28,.96)),
+    repeating-linear-gradient(90deg, rgba(148,163,184,.05) 0 1px, transparent 1px 56px);
+  box-shadow: var(--shadow);
+}
+.field-hero h1 {
+  font-size: 42px;
+  line-height: 1.05;
+  margin-bottom: 14px;
+}
+.field-hero p {
+  max-width: 420px;
+  color: #c6d3e4;
+  line-height: 1.55;
+}
+.field-status {
+  display: grid;
+  gap: 6px;
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+}
+.field-status strong {
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.field-status span {
+  font-size: 22px;
+  font-weight: 800;
+}
+.field-card {
+  width: 100%;
+  max-width: none;
+  padding: 28px;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.upload-box {
+  border: 1px dashed #3a4b68;
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(7,13,24,.58);
+}
+.upload-box span {
+  color: #dbe7f6;
+  font-weight: 700;
+}
+.upload-box input {
+  margin-top: 10px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.upload-box small {
+  color: var(--muted);
+  line-height: 1.45;
+}
 .dashboard { padding: 22px; }
 .metric-strip {
   display: grid;
@@ -319,4 +397,8 @@ dialog {
   .metric-strip { grid-template-columns: repeat(2, 1fr); }
   .topbar { align-items: flex-start; flex-direction: column; }
   .dashboard { padding: 12px; }
+  .field-report-shell { grid-template-columns: 1fr; padding-top: 18px; }
+  .field-hero { min-height: auto; padding: 22px; }
+  .field-hero h1 { font-size: 34px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
 }
