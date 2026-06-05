@@ -31,6 +31,16 @@ npm start
 http://localhost:3000
 ```
 
+## Como acessar em WAN pelo Render
+
+Quando publicado no Render, use a URL publica do servico:
+
+```text
+https://relatorio-equipe.onrender.com
+```
+
+No plano gratuito, o Render pode "dormir" quando fica sem uso. O primeiro acesso depois de um tempo pode demorar cerca de 50 segundos.
+
 ## Usuarios iniciais
 
 - Administrador: `admin` / `admin123`

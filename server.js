@@ -10,6 +10,8 @@ const DATA = path.join(ROOT, "data");
 const UPLOADS = path.join(ROOT, "public", "uploads");
 const DB_FILE = path.join(DATA, "ocorrencias.sqlite");
 const PORT = Number(process.env.PORT || 3000);
+const HOST = process.env.HOST || "0.0.0.0";
+const PUBLIC_URL = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || `http://localhost:${PORT}`;
 const STATUSES = ["Nova", "Em atendimento", "Resolvida", "Cancelada"];
 
 fs.mkdirSync(DATA, { recursive: true });
@@ -372,6 +374,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`Sistema de ocorrencias rodando em http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Sistema de ocorrencias rodando em ${PUBLIC_URL}`);
 });
