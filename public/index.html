@@ -7,16 +7,34 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body class="login-page">
-  <main class="login-card">
-    <div class="brand-mark">CM</div>
-    <h1>Central de Monitoramento</h1>
-    <p>Sistema de registro e acompanhamento de ocorrencias em tempo real.</p>
-    <form id="loginForm">
-      <label>Usuario<input name="username" autocomplete="username" required></label>
-      <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
-      <button class="primary" type="submit">Entrar</button>
-      <output id="loginMessage"></output>
-    </form>
+  <main class="login-shell">
+    <section class="login-intro">
+      <div class="brand-lockup">
+        <div class="brand-mark">CM</div>
+        <div>
+          <strong>Central de Monitoramento</strong>
+          <span>Registro de Ocorrencias</span>
+        </div>
+      </div>
+      <h1>Controle operacional em tempo real</h1>
+      <p>Registre, acompanhe e trate ocorrencias de seguranca com resposta imediata da Central.</p>
+      <div class="status-grid">
+        <div><span></span> Ambiente seguro</div>
+        <div><span></span> Painel em tempo real</div>
+        <div><span></span> Historico auditavel</div>
+      </div>
+    </section>
+    <section class="login-card">
+      <div class="form-eyebrow">Acesso restrito</div>
+      <h2>Entrar no sistema</h2>
+      <p>Informe suas credenciais para acessar o modulo permitido ao seu perfil.</p>
+      <form id="loginForm">
+        <label>Usuario<input name="username" autocomplete="username" required></label>
+        <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary" type="submit">Entrar</button>
+        <output id="loginMessage"></output>
+      </form>
+    </section>
   </main>
   <script src="/app.js"></script>
 </body>
