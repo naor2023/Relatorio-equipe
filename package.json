@@ -1,0 +1,12 @@
+{
+  "name": "registro-ocorrencias-tempo-real",
+  "version": "1.0.0",
+  "description": "Sistema web para registro, monitoramento em tempo real e gestao de ocorrencias de seguranca.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-warnings server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

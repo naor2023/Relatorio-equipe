@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Registro de Ocorrencias</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand-mark">CM</div>
+    <h1>Central de Monitoramento</h1>
+    <p>Sistema de registro e acompanhamento de ocorrencias em tempo real.</p>
+    <form id="loginForm">
+      <label>Usuario<input name="username" autocomplete="username" required></label>
+      <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="primary" type="submit">Entrar</button>
+      <output id="loginMessage"></output>
+    </form>
+    <div class="demo-users">
+      <strong>Acessos iniciais:</strong>
+      admin/admin123 | central/central123 | vigia/vigia123
+    </div>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
