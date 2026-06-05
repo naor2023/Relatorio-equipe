@@ -1,5 +1,14 @@
 {
   "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/index.html", "destination": "/public/index.html" },
+    { "source": "/vigia.html", "destination": "/public/vigia.html" },
+    { "source": "/central.html", "destination": "/public/central.html" },
+    { "source": "/historico.html", "destination": "/public/historico.html" },
+    { "source": "/admin.html", "destination": "/public/admin.html" },
+    { "source": "/app.js", "destination": "/public/app.js" },
+    { "source": "/styles.css", "destination": "/public/styles.css" },
+    { "source": "/uploads/:path*", "destination": "/public/uploads/:path*" },
     { "source": "/api/:path*", "destination": "/api/index.js" },
     { "source": "/relatorio.html", "destination": "/api/index.js" }
   ]
