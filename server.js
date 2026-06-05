@@ -5,9 +5,9 @@ const crypto = require("node:crypto");
 const { DatabaseSync } = require("node:sqlite");
 
 const ROOT = __dirname;
-const PUBLIC = path.join(ROOT, "public");
+const PUBLIC = ROOT;
 const DATA = path.join(ROOT, "data");
-const UPLOADS = path.join(PUBLIC, "uploads");
+const UPLOADS = path.join(ROOT, "public", "uploads");
 const DB_FILE = path.join(DATA, "ocorrencias.sqlite");
 const PORT = Number(process.env.PORT || 3000);
 const STATUSES = ["Nova", "Em atendimento", "Resolvida", "Cancelada"];
@@ -193,6 +193,7 @@ function saveAttachment(occurrenceId, attachment) {
 
 function serveStatic(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname.startsWith("/api/") || url.pathname === "/events") return false;
   let filePath = path.normalize(path.join(PUBLIC, decodeURIComponent(url.pathname)));
   if (!filePath.startsWith(PUBLIC)) return json(res, 403, { error: "Acesso negado." });
   if (fs.statSync(filePath, { throwIfNoEntry: false })?.isDirectory()) filePath = path.join(filePath, "index.html");

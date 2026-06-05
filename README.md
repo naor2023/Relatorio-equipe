@@ -57,7 +57,7 @@ git push -u origin main
 5. Output Directory: deixe vazio.
 6. Deploy.
 
-O projeto ja possui `vercel.json` e a pasta `api/`, entao a Vercel vai servir as paginas estaticas em `public/` e as rotas `/api/...`.
+O projeto ja possui `vercel.json` e a pasta `api/`, entao a Vercel vai servir as paginas HTML/CSS/JS da raiz e as rotas `/api/...`.
 
 Importante: a versao da Vercel esta pronta para demonstracao, mas usa memoria da funcao serverless. Isso significa que os dados podem resetar quando a Vercel reiniciar a funcao. Para uso real em producao, o proximo passo e ligar um banco externo, como Vercel Postgres, Neon, Supabase, PostgreSQL interno ou MySQL, e um storage externo para anexos.
 

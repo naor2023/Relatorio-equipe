@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Central de Monitoramento</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="control-room">
+  <header class="topbar">
+    <strong>Central de Monitoramento</strong>
+    <nav><a href="/historico.html">Historico</a><a href="/admin.html" data-admin>Admin</a><button id="logoutBtn">Sair</button></nav>
+  </header>
+  <main class="dashboard">
+    <section class="metric-strip">
+      <div><span id="countNova">0</span><small>Novas</small></div>
+      <div><span id="countAtendimento">0</span><small>Em atendimento</small></div>
+      <div><span id="countResolvida">0</span><small>Resolvidas</small></div>
+      <div><span id="liveState">Online</span><small>Tempo real</small></div>
+    </section>
+    <section class="occurrence-board">
+      <div class="board-head">
+        <h1>Ocorrencias em tempo real</h1>
+        <button id="soundBtn">Ativar alerta sonoro</button>
+      </div>
+      <div id="occurrenceList" class="occurrence-list"></div>
+    </section>
+  </main>
+  <dialog id="detailDialog">
+    <form method="dialog" class="dialog-form">
+      <button class="close">Fechar</button>
+      <div id="detailContent"></div>
+    </form>
+  </dialog>
+  <script src="/app.js"></script>
+</body>
+</html>

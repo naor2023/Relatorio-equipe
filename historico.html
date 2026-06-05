@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historico de Ocorrencias</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <strong>Historico</strong>
+    <nav><a href="/central.html">Central</a><a href="/vigia.html">Registrar</a><button id="logoutBtn">Sair</button></nav>
+  </header>
+  <main class="page">
+    <section class="panel">
+      <h1>Consultar ocorrencias</h1>
+      <form id="filters" class="filters">
+        <label>De<input name="from" type="date"></label>
+        <label>Ate<input name="to" type="date"></label>
+        <label>Local<input name="location"></label>
+        <label>Tipo<input name="type"></label>
+        <label>Status<select name="status"><option value="">Todos</option></select></label>
+        <label>Colaborador<input name="collaborator"></label>
+        <button class="primary">Filtrar</button>
+        <button type="button" id="csvBtn">Exportar Excel/CSV</button>
+        <button type="button" id="pdfBtn">Relatorio PDF</button>
+      </form>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>N.</th><th>Data</th><th>Colaborador</th><th>Local</th><th>Tipo</th><th>Status</th><th>Descricao</th></tr></thead>
+          <tbody id="historyRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
