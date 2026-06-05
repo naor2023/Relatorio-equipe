@@ -253,7 +253,7 @@ module.exports = async function handler(req, res) {
       return res.end(csv);
     }
 
-    if (req.method === "GET" && pathname === "/api/relatorio") {
+    if (req.method === "GET" && (pathname === "/api/relatorio" || pathname === "/relatorio.html")) {
       requireRole(req, res, ["central", "admin"]);
       if (res.writableEnded) return;
       const tr = filteredOccurrences(url).map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.description}</td><td>${r.status}</td></tr>`).join("");
