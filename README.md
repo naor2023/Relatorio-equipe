@@ -41,12 +41,6 @@ https://relatorio-equipe.onrender.com
 
 No plano gratuito, o Render pode "dormir" quando fica sem uso. O primeiro acesso depois de um tempo pode demorar cerca de 50 segundos.
 
-## Usuarios iniciais
-
-- Administrador: `admin` / `admin123`
-- Central: `central` / `central123`
-- Vigia: `vigia` / `vigia123`
-
 ## Como subir no GitHub
 
 ```powershell
