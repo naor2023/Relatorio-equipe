@@ -373,6 +373,9 @@ output { display: block; margin-top: 12px; color: var(--accent); }
   color: var(--muted);
   line-height: 1.45;
 }
+.upload-box + .primary {
+  margin-top: 18px;
+}
 .camera-dialog {
   display: grid;
   gap: 12px;
