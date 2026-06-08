@@ -306,6 +306,9 @@ output { display: block; margin-top: 12px; color: var(--accent); }
   color: #c6d3e4;
   line-height: 1.5;
 }
+.form-head .form-eyebrow {
+  margin-bottom: 16px;
+}
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
