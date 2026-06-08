@@ -176,6 +176,8 @@ let soundEnabled = false;
 let pollingTimer = null;
 let titleFlashTimer = null;
 const defaultTitle = document.title;
+let hasLoadedCentralOnce = false;
+let lastSeenOccurrenceId = 0;
 function beep() {
   if (!soundEnabled) return;
   const ctx = new AudioContext();
@@ -200,6 +202,21 @@ function showToast(message) {
     toast.classList.add("toast-out");
     setTimeout(() => toast.remove(), 220);
   }, 4500);
+}
+
+function showInlineAlert(message) {
+  const alert = $("#inlineAlert");
+  if (!alert) return;
+  alert.textContent = message;
+  alert.hidden = false;
+  alert.classList.remove("inline-alert-out");
+  setTimeout(() => {
+    alert.classList.add("inline-alert-out");
+    setTimeout(() => {
+      alert.hidden = true;
+      alert.classList.remove("inline-alert-out");
+    }, 220);
+  }, 5000);
 }
 
 function flashTitle(message) {
@@ -231,6 +248,7 @@ async function enableBrowserNotifications() {
 
 function notifyOccurrence(item) {
   const message = `Nova ocorrencia: ${item.type} em ${item.location}`;
+  showInlineAlert(message);
   showToast(message);
   flashTitle("Nova ocorrencia recebida");
   if ("Notification" in window && Notification.permission === "granted") {
@@ -281,6 +299,20 @@ async function loadCentral() {
   const { occurrences } = await api("/api/occurrences");
   $("#occurrenceList").innerHTML = occurrences.map(card).join("") || "<p class='muted'>Nenhuma ocorrencia registrada.</p>";
   updateMetrics(occurrences);
+  const newestId = occurrences[0]?.id || 0;
+  if (!hasLoadedCentralOnce) {
+    hasLoadedCentralOnce = true;
+    lastSeenOccurrenceId = newestId;
+    return;
+  }
+  if (newestId > lastSeenOccurrenceId) {
+    const newestItem = occurrences.find((item) => item.id === newestId);
+    if (newestItem) {
+      beep();
+      notifyOccurrence(newestItem);
+    }
+    lastSeenOccurrenceId = newestId;
+  }
 }
 
 async function initCentral() {
@@ -313,16 +345,22 @@ async function initCentral() {
   const events = new EventSource("/events");
   events.addEventListener("occurrence-created", async (event) => {
     const item = JSON.parse(event.data);
-    beep();
+    lastSeenOccurrenceId = Math.max(lastSeenOccurrenceId, item.id || 0);
     notifyOccurrence(item);
     await loadCentral();
   });
   events.addEventListener("occurrence-updated", loadCentral);
   events.onerror = () => {
-    if ($("#liveState")) $("#liveState").textContent = "Online";
+    if ($("#liveState")) $("#liveState").textContent = "Reconectando";
     if (!pollingTimer) pollingTimer = setInterval(loadCentral, 3000);
   };
-  events.onopen = () => { if ($("#liveState")) $("#liveState").textContent = "Online"; };
+  events.onopen = () => {
+    if ($("#liveState")) $("#liveState").textContent = "Online";
+    if (pollingTimer) {
+      clearInterval(pollingTimer);
+      pollingTimer = null;
+    }
+  };
 }
 
 async function initHistory() {

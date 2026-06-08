@@ -428,6 +428,19 @@ output { display: block; margin-top: 12px; color: var(--accent); }
   flex-wrap: wrap;
 }
 .board-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+.inline-alert {
+  margin-bottom: 12px;
+  border: 1px solid rgba(34,197,94,.28);
+  background: rgba(6, 18, 14, .92);
+  color: #eafff0;
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.inline-alert-out {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .2s ease, transform .2s ease;
+}
 .occurrence-list { display: grid; gap: 12px; }
 .toast-stack {
   position: fixed;
