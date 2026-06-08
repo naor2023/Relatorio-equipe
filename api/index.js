@@ -27,10 +27,16 @@ function verifyPassword(password, stored) {
 }
 
 function seed() {
-  if (state.users.length) return;
-  addUser("Administrador", "admin", "admin123", "admin");
-  addUser("Central de Monitoramento", "central", "central123", "central");
-  addUser("Vigia Demo", "vigia", "vigia123", "vigia");
+  [
+    ["Administrador", "admin", "admin123", "admin"],
+    ["Central de Monitoramento", "central", "central123", "central"],
+    ["Central Portaria", "portaria", "portaria123", "central"],
+    ["Vigia Demo", "vigia", "vigia123", "vigia"]
+  ].forEach(([name, username, password, role]) => {
+    if (!state.users.some((u) => u.username === username)) {
+      addUser(name, username, password, role);
+    }
+  });
 }
 
 function addUser(name, username, password, role) {
@@ -116,7 +122,7 @@ function filteredOccurrences(url) {
   const to = url.searchParams.get("to");
   if (from) rows = rows.filter((x) => x.created_at.slice(0, 10) >= from);
   if (to) rows = rows.filter((x) => x.created_at.slice(0, 10) <= to);
-  return rows.sort((a, b) => b.id - a.id).slice(0, 500);
+  return rows.sort((a, b) => b.id - a.id);
 }
 
 module.exports = async function handler(req, res) {
@@ -145,7 +151,6 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "GET" && pathname === "/api/options") {
-      requireRole(req, res, ["vigia", "central", "admin"]);
       if (res.writableEnded) return;
       return send(res, 200, { locations: state.locations, types: state.types, statuses: STATUSES });
     }
@@ -188,8 +193,6 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "POST" && pathname === "/api/occurrences") {
-      const user = requireRole(req, res, ["vigia", "central", "admin"]);
-      if (!user) return;
       const data = await body(req);
       if (!data.collaborator_name || !data.location || !data.type || !data.description) return send(res, 400, { error: "Preencha todos os campos obrigatorios." });
       const item = {
@@ -201,7 +204,7 @@ module.exports = async function handler(req, res) {
         status: "Nova",
         created_at: now(),
         updated_at: now(),
-        created_by: user.id,
+        created_by: null,
         attachments: data.attachment ? [{
           id: state.nextAttachmentId++,
           original_name: data.attachment.name || "anexo",

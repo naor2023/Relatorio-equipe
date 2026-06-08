@@ -12,10 +12,9 @@ const api = async (url, options = {}) => {
 
 async function loadMe() {
   const { user } = await api("/api/me");
-  if (!user && location.pathname !== "/") location.href = "/";
-  if (user && location.pathname === "/") {
-    location.href = user.role === "vigia" ? "/vigia.html" : "/central.html";
-  }
+  const protectedPaths = new Set(["/central.html", "/historico.html", "/admin.html"]);
+  if (!user && protectedPaths.has(location.pathname)) location.href = "/";
+  if (user && location.pathname === "/") location.href = "/central.html";
   if (user && location.pathname === "/admin.html" && user.role !== "admin") location.href = "/central.html";
   if (user?.role !== "admin") document.querySelectorAll("[data-admin]").forEach((el) => el.remove());
   return user;
@@ -197,7 +196,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       ev.preventDefault();
       try {
         const data = await api("/api/login", { method: "POST", body: JSON.stringify(Object.fromEntries(new FormData(ev.target))) });
-        location.href = data.role === "vigia" ? "/vigia.html" : "/central.html";
+        location.href = "/central.html";
       } catch (error) {
         $("#loginMessage").textContent = error.message;
       }
@@ -218,7 +217,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         await api("/api/occurrences", { method: "POST", body: JSON.stringify(payload) });
         form.reset();
-        $("#formMessage").textContent = "Ocorrencia enviada com sucesso para a Central de Monitoramento";
+        $("#formMessage").textContent = "Ocorrencia enviada.";
       } catch (error) {
         $("#formMessage").textContent = error.message;
       }

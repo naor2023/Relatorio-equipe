@@ -9,11 +9,12 @@
 <body>
   <header class="topbar">
     <strong>Historico</strong>
-    <nav><a href="/central.html">Central</a><a href="/vigia.html">Registrar</a><button id="logoutBtn">Sair</button></nav>
+    <nav><a href="/central.html">Central</a><a href="/admin.html" data-admin>Admin</a><button id="logoutBtn">Sair</button></nav>
   </header>
   <main class="page">
     <section class="panel">
       <h1>Consultar ocorrencias</h1>
+      <p>O historico permanece salvo no banco local para consulta da Central e da administracao, inclusive registros antigos.</p>
       <form id="filters" class="filters">
         <label>De<input name="from" type="date"></label>
         <label>Ate<input name="to" type="date"></label>

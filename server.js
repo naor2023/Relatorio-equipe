@@ -90,17 +90,27 @@ function verifyPassword(password, stored) {
 }
 
 function seed() {
-  const count = db.prepare("SELECT COUNT(*) AS total FROM users").get().total;
-  if (count) return;
   const addUser = db.prepare("INSERT INTO users (name, username, password_hash, role) VALUES (?, ?, ?, ?)");
-  addUser.run("Administrador", "admin", hashPassword("admin123"), "admin");
-  addUser.run("Central de Monitoramento", "central", hashPassword("central123"), "central");
-  addUser.run("Vigia Demo", "vigia", hashPassword("vigia123"), "vigia");
-  ["Portaria Principal", "Ronda Externa", "Estacionamento", "Galpao", "Recepcao"].forEach((name) => {
-    db.prepare("INSERT INTO locations (name) VALUES (?)").run(name);
+  const userExists = db.prepare("SELECT 1 FROM users WHERE username = ? LIMIT 1");
+  [
+    ["Administrador", "admin", "admin123", "admin"],
+    ["Central de Monitoramento", "central", "central123", "central"],
+    ["Central Portaria", "portaria", "portaria123", "central"],
+    ["Vigia Demo", "vigia", "vigia123", "vigia"]
+  ].forEach(([name, username, password, role]) => {
+    if (!userExists.get(username)) {
+      addUser.run(name, username, hashPassword(password), role);
+    }
   });
+
+  const addLocation = db.prepare("INSERT OR IGNORE INTO locations (name) VALUES (?)");
+  ["Portaria Principal", "Ronda Externa", "Estacionamento", "Galpao", "Recepcao"].forEach((name) => {
+    addLocation.run(name);
+  });
+
+  const addType = db.prepare("INSERT OR IGNORE INTO occurrence_types (name) VALUES (?)");
   ["Pessoa suspeita", "Porta aberta", "Incidente operacional", "Avaria", "Emergencia", "Outro"].forEach((name) => {
-    db.prepare("INSERT INTO occurrence_types (name) VALUES (?)").run(name);
+    addType.run(name);
   });
 }
 seed();
@@ -221,7 +231,7 @@ function filteredOccurrences(url) {
   const to = url.searchParams.get("to");
   if (from) { where.push("date(created_at) >= date(?)"); args.push(from); }
   if (to) { where.push("date(created_at) <= date(?)"); args.push(to); }
-  const sql = `SELECT * FROM occurrences ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY datetime(created_at) DESC, id DESC LIMIT 500`;
+  const sql = `SELECT * FROM occurrences ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY datetime(created_at) DESC, id DESC`;
   return db.prepare(sql).all(...args);
 }
 
@@ -264,7 +274,6 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && url.pathname === "/api/me") return json(res, 200, { user: currentUser(req) });
 
     if (req.method === "GET" && url.pathname === "/api/options") {
-      requireRole(req, res, ["vigia", "central", "admin"]);
       return json(res, 200, {
         locations: db.prepare("SELECT name FROM locations WHERE active = 1 ORDER BY name").all().map((x) => x.name),
         types: db.prepare("SELECT name FROM occurrence_types WHERE active = 1 ORDER BY name").all().map((x) => x.name),
@@ -309,14 +318,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/occurrences") {
-      const user = requireRole(req, res, ["vigia", "central", "admin"]);
-      if (!user) return;
       const body = await readBody(req);
       if (!body.collaborator_name || !body.location || !body.type || !body.description) return json(res, 400, { error: "Preencha todos os campos obrigatorios." });
       const result = db.prepare(`
         INSERT INTO occurrences (collaborator_name, location, type, description, status, created_by)
         VALUES (?, ?, ?, ?, 'Nova', ?)
-      `).run(body.collaborator_name.trim(), body.location.trim(), body.type.trim(), body.description.trim(), user.id);
+      `).run(body.collaborator_name.trim(), body.location.trim(), body.type.trim(), body.description.trim(), null);
       saveAttachment(result.lastInsertRowid, body.attachment);
       const item = occurrenceById(result.lastInsertRowid);
       broadcast("occurrence-created", item);
