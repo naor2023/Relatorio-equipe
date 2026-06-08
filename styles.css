@@ -461,15 +461,37 @@ dialog {
   .login-card { border-left: 0; border-top: 1px solid rgba(148,163,184,.16); padding: 28px; }
   .status-grid { grid-template-columns: 1fr; }
   .metric-strip { grid-template-columns: repeat(2, 1fr); }
-  .topbar { align-items: flex-start; flex-direction: column; padding: 14px 16px; }
-  .topbar nav { width: 100%; justify-content: space-between; }
-  .topbar a { padding: 10px 12px; }
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .topbar strong {
+    font-size: 15px;
+  }
+  .topbar nav {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .topbar a {
+    padding: 9px 10px;
+    font-size: 14px;
+  }
   .dashboard { padding: 12px; }
   .field-report-shell { width: min(100%, calc(100vw - 16px)); grid-template-columns: 1fr; padding-top: 12px; }
-  .field-card { padding: 18px 16px; border-radius: 10px; }
-  .form-head { margin-bottom: 14px; }
-  .form-head h1 { font-size: 28px; }
+  .field-card { padding: 14px 12px; border-radius: 10px; }
+  .form-head { margin-bottom: 10px; }
+  .form-head h1 { font-size: 22px; margin-bottom: 6px; }
+  .form-head p { font-size: 15px; line-height: 1.4; }
+  .form-eyebrow { margin-bottom: 10px; padding: 5px 9px; font-size: 11px; }
+  label { gap: 6px; margin: 12px 0; }
+  input, select, textarea { padding: 11px 12px; }
   .form-row { grid-template-columns: 1fr; gap: 0; }
-  .upload-option { padding: 12px 10px; }
+  .upload-box { padding: 12px; }
+  .upload-option { padding: 10px; margin-bottom: 10px; }
+  .upload-option strong { font-size: 15px; }
   .file-trigger { width: 100%; }
+  button.primary { width: 100%; }
 }
