@@ -33,24 +33,42 @@
         <div class="upload-box">
           <span>Anexo opcional</span>
           <div class="upload-option">
-            <strong>Escolher imagem ou video</strong>
-            <label class="file-trigger" for="attachmentInput">Abrir galeria ou arquivos</label>
+            <div class="upload-option-head">
+              <strong>Arquivo</strong>
+              <small>Imagem ou video ja salvo no aparelho.</small>
+            </div>
+            <button class="file-trigger subtle-trigger" id="attachmentButton" type="button">Escolher arquivo</button>
             <input id="attachmentInput" name="attachment" type="file" accept="image/*,video/*">
             <small id="attachmentName">Nenhum arquivo selecionado.</small>
           </div>
           <div class="upload-option">
-            <strong>Tirar foto agora</strong>
-            <label class="file-trigger camera-trigger" for="cameraInput">Abrir camera do celular</label>
+            <div class="upload-option-head">
+              <strong>Foto</strong>
+              <small>Use a camera do celular ou a webcam do computador.</small>
+            </div>
+            <button class="file-trigger subtle-trigger camera-trigger" id="cameraButton" type="button">Abrir camera</button>
             <input id="cameraInput" name="camera_attachment" type="file" accept="image/*" capture="environment">
             <small id="cameraAttachmentName">Nenhuma foto capturada.</small>
           </div>
-          <small>Use a camera para registrar a imagem na hora ou escolha um arquivo que ja esteja no aparelho.</small>
+          <small>Escolha um arquivo existente ou capture uma foto na hora, se isso ajudar na investigacao.</small>
         </div>
         <button class="primary" type="submit">Enviar ocorrencia</button>
         <output id="formMessage"></output>
       </form>
     </section>
   </main>
+  <dialog id="cameraCaptureDialog">
+    <form method="dialog" class="dialog-form camera-dialog">
+      <button class="close">Fechar</button>
+      <h2>Capturar foto</h2>
+      <p class="muted">Posicione a webcam e capture a imagem para anexar a ocorrencia.</p>
+      <video id="cameraPreview" autoplay playsinline muted></video>
+      <canvas id="cameraCanvas" hidden></canvas>
+      <div class="camera-actions">
+        <button type="button" id="capturePhotoBtn" class="primary">Capturar foto</button>
+      </div>
+    </form>
+  </dialog>
   <script src="/app.js"></script>
 </body>
 </html>

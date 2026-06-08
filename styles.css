@@ -324,42 +324,68 @@ output { display: block; margin-top: 12px; color: var(--accent); }
 }
 .upload-option {
   display: grid;
-  gap: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(58,75,104,.7);
+  gap: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(58,75,104,.55);
   border-radius: 8px;
-  background: rgba(10,18,32,.65);
+  background: rgba(10,18,32,.42);
+}
+.upload-option-head {
+  display: grid;
+  gap: 2px;
 }
 .upload-option strong {
   color: #dbe7f6;
+  font-size: 14px;
+}
+.upload-option-head small {
+  color: var(--muted);
+  font-size: 12px;
 }
 .file-trigger {
   width: fit-content;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 10px 14px;
+  min-height: 34px;
+  padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(56,189,248,.35);
-  background: rgba(56,189,248,.08);
-  color: #d7efff;
-  font-weight: 700;
+  border: 1px solid rgba(148,163,184,.28);
+  background: rgba(148,163,184,.08);
+  color: #dbe7f6;
+  font-weight: 600;
   cursor: pointer;
 }
 .file-trigger:hover {
   transform: translateY(-1px);
-  background: rgba(56,189,248,.14);
+  background: rgba(148,163,184,.14);
+}
+.subtle-trigger {
+  box-shadow: none;
 }
 .camera-trigger {
-  border-color: rgba(34,197,94,.35);
-  background: rgba(34,197,94,.1);
+  border-color: rgba(34,197,94,.24);
+  background: rgba(34,197,94,.08);
   color: #dfffe9;
 }
 .upload-box small {
   color: var(--muted);
   line-height: 1.45;
+}
+.camera-dialog {
+  display: grid;
+  gap: 12px;
+}
+#cameraPreview {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #020817;
+}
+.camera-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 .dashboard { padding: 22px; }
 .metric-strip {

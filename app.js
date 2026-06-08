@@ -55,22 +55,99 @@ function wireAttachmentLabels() {
   const attachmentName = $("#attachmentName");
   const cameraInput = $("#cameraInput");
   const cameraAttachmentName = $("#cameraAttachmentName");
+  const attachmentButton = $("#attachmentButton");
+  const cameraButton = $("#cameraButton");
+  const cameraDialog = $("#cameraCaptureDialog");
+  const cameraPreview = $("#cameraPreview");
+  const cameraCanvas = $("#cameraCanvas");
+  const capturePhotoBtn = $("#capturePhotoBtn");
+  let webcamStream = null;
+  let capturedCameraFile = null;
+
+  const prefersDirectCameraInput = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.matchMedia("(pointer: coarse)").matches;
+
+  const clearCapturedPhoto = () => {
+    capturedCameraFile = null;
+    if (cameraInput) cameraInput.value = "";
+    if (cameraAttachmentName) cameraAttachmentName.textContent = "Nenhuma foto capturada.";
+  };
+
+  const stopWebcam = () => {
+    if (!webcamStream) return;
+    webcamStream.getTracks().forEach((track) => track.stop());
+    webcamStream = null;
+    if (cameraPreview) cameraPreview.srcObject = null;
+  };
+
+  attachmentButton?.addEventListener("click", () => attachmentInput?.click());
+  cameraButton?.addEventListener("click", async () => {
+    if (prefersDirectCameraInput()) {
+      cameraInput?.click();
+      return;
+    }
+    if (!cameraDialog || !cameraPreview || !navigator.mediaDevices?.getUserMedia) {
+      cameraInput?.click();
+      return;
+    }
+    try {
+      webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      cameraPreview.srcObject = webcamStream;
+      cameraDialog.showModal();
+    } catch {
+      cameraInput?.click();
+    }
+  });
 
   attachmentInput?.addEventListener("change", () => {
     attachmentName.textContent = attachmentInput.files[0]?.name || "Nenhum arquivo selecionado.";
     if (attachmentInput.files[0] && cameraInput) {
-      cameraInput.value = "";
-      if (cameraAttachmentName) cameraAttachmentName.textContent = "Nenhuma foto capturada.";
+      clearCapturedPhoto();
     }
   });
 
   cameraInput?.addEventListener("change", () => {
+    capturedCameraFile = cameraInput.files[0] || null;
     cameraAttachmentName.textContent = cameraInput.files[0]?.name || "Nenhuma foto capturada.";
     if (cameraInput.files[0] && attachmentInput) {
       attachmentInput.value = "";
       if (attachmentName) attachmentName.textContent = "Nenhum arquivo selecionado.";
     }
   });
+
+  capturePhotoBtn?.addEventListener("click", async () => {
+    if (!cameraPreview || !cameraCanvas) return;
+    const width = cameraPreview.videoWidth || 1280;
+    const height = cameraPreview.videoHeight || 720;
+    cameraCanvas.width = width;
+    cameraCanvas.height = height;
+    const ctx = cameraCanvas.getContext("2d");
+    ctx.drawImage(cameraPreview, 0, 0, width, height);
+    const blob = await new Promise((resolve) => cameraCanvas.toBlob(resolve, "image/jpeg", 0.92));
+    if (!blob) return;
+    capturedCameraFile = new File([blob], `captura-${Date.now()}.jpg`, { type: "image/jpeg" });
+    if (cameraAttachmentName) cameraAttachmentName.textContent = capturedCameraFile.name;
+    if (attachmentInput) {
+      attachmentInput.value = "";
+      if (attachmentName) attachmentName.textContent = "Nenhum arquivo selecionado.";
+    }
+    cameraDialog?.close();
+    stopWebcam();
+  });
+
+  cameraDialog?.addEventListener("close", stopWebcam);
+  window.addEventListener("beforeunload", stopWebcam);
+
+  return {
+    getSelectedFile() {
+      return capturedCameraFile || cameraInput?.files[0] || attachmentInput?.files[0] || null;
+    },
+    reset() {
+      if (attachmentInput) attachmentInput.value = "";
+      if (attachmentName) attachmentName.textContent = "Nenhum arquivo selecionado.";
+      clearCapturedPhoto();
+      stopWebcam();
+    }
+  };
 }
 
 function qsFromForm(form) {
@@ -229,21 +306,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   await loadMe();
   wireLogout();
-  wireAttachmentLabels();
+  const attachmentController = wireAttachmentLabels();
   await fillOptions().catch(() => {});
   if ($("#occurrenceForm")) {
     $("#occurrenceForm").addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const form = ev.target;
-      const file = form.camera_attachment.files[0] || form.attachment.files[0];
+      const file = attachmentController?.getSelectedFile?.() || form.camera_attachment.files[0] || form.attachment.files[0];
       const payload = Object.fromEntries(new FormData(form));
       delete payload.camera_attachment;
       payload.attachment = await toDataUrl(file);
       try {
         await api("/api/occurrences", { method: "POST", body: JSON.stringify(payload) });
         form.reset();
-        if ($("#attachmentName")) $("#attachmentName").textContent = "Nenhum arquivo selecionado.";
-        if ($("#cameraAttachmentName")) $("#cameraAttachmentName").textContent = "Nenhuma foto capturada.";
+        attachmentController?.reset?.();
         $("#formMessage").textContent = "Ocorrencia enviada.";
       } catch (error) {
         $("#formMessage").textContent = error.message;
