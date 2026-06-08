@@ -16,8 +16,20 @@
       <h1>Consultar ocorrencias</h1>
       <p>O historico permanece salvo no banco local para consulta da Central e da administracao, inclusive registros antigos.</p>
       <form id="filters" class="filters">
-        <label>De<input name="from" type="date"></label>
-        <label>Ate<input name="to" type="date"></label>
+        <label>De
+          <div class="date-field" data-date-field>
+            <input id="fromDisplay" class="date-display" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" autocomplete="off">
+            <input id="fromValue" name="from" type="hidden">
+            <button type="button" class="date-trigger" data-date-button="fromValue" aria-label="Abrir calendario inicial">📅</button>
+          </div>
+        </label>
+        <label>Ate
+          <div class="date-field" data-date-field>
+            <input id="toDisplay" class="date-display" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" autocomplete="off">
+            <input id="toValue" name="to" type="hidden">
+            <button type="button" class="date-trigger" data-date-button="toValue" aria-label="Abrir calendario final">📅</button>
+          </div>
+        </label>
         <label>Local<input name="location"></label>
         <label>Tipo<input name="type"></label>
         <label>Status<select name="status"><option value="">Todos</option></select></label>
@@ -25,6 +37,7 @@
         <button class="primary">Filtrar</button>
         <button type="button" id="csvBtn">Exportar Excel/CSV</button>
         <button type="button" id="pdfBtn">Relatorio PDF</button>
+        <div id="historyDatePicker" class="history-date-picker" hidden></div>
       </form>
       <div class="table-wrap">
         <table>

@@ -150,6 +150,194 @@ function qsFromForm(form) {
   return params.toString();
 }
 
+function formatDateForDisplay(iso) {
+  if (!iso) return "";
+  const [year, month, day] = iso.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function parseDisplayDate(text) {
+  const match = String(text || "").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return "";
+  const [, day, month, year] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) return "";
+  return `${year}-${month}-${day}`;
+}
+
+function maskDisplayDate(value) {
+  const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+  const parts = [];
+  if (digits.slice(0, 2)) parts.push(digits.slice(0, 2));
+  if (digits.slice(2, 4)) parts.push(digits.slice(2, 4));
+  if (digits.slice(4, 8)) parts.push(digits.slice(4, 8));
+  return parts.join("/");
+}
+
+function isoFromDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromIso(iso) {
+  const [year, month, day] = String(iso).split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function initHistoryDatePickers(form) {
+  const picker = $("#historyDatePicker");
+  const monthNames = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
+  if (!picker) return;
+
+  const fields = [
+    {
+      wrapper: $("#fromDisplay")?.closest(".date-field"),
+      display: $("#fromDisplay"),
+      hidden: $("#fromValue")
+    },
+    {
+      wrapper: $("#toDisplay")?.closest(".date-field"),
+      display: $("#toDisplay"),
+      hidden: $("#toValue")
+    }
+  ].filter((field) => field.wrapper && field.display && field.hidden);
+
+  const state = {
+    activeField: null,
+    viewDate: new Date()
+  };
+
+  const setFieldValue = (field, iso) => {
+    field.hidden.value = iso || "";
+    field.display.value = formatDateForDisplay(iso);
+  };
+
+  const closePicker = () => {
+    picker.hidden = true;
+    fields.forEach((field) => field.wrapper.classList.remove("date-field-open"));
+    state.activeField = null;
+  };
+
+  const openPicker = (field) => {
+    state.activeField = field;
+    fields.forEach((item) => item.wrapper.classList.toggle("date-field-open", item === field));
+    state.viewDate = field.hidden.value ? dateFromIso(field.hidden.value) : new Date();
+    const rect = field.wrapper.getBoundingClientRect();
+    picker.style.top = `${rect.bottom + 8}px`;
+    picker.style.left = `${rect.left}px`;
+    picker.hidden = false;
+    renderPicker();
+  };
+
+  const renderPicker = () => {
+    if (!state.activeField) return;
+    const year = state.viewDate.getFullYear();
+    const month = state.viewDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const offset = firstDay.getDay();
+    const start = new Date(year, month, 1 - offset);
+    const activeIso = state.activeField.hidden.value;
+    const todayIso = isoFromDate(new Date());
+    const dayButtons = Array.from({ length: 42 }, (_, index) => {
+      const current = new Date(start);
+      current.setDate(start.getDate() + index);
+      const iso = isoFromDate(current);
+      const classes = [
+        "calendar-day",
+        current.getMonth() !== month ? "calendar-day-muted" : "",
+        iso === activeIso ? "calendar-day-selected" : "",
+        iso === todayIso ? "calendar-day-today" : ""
+      ].filter(Boolean).join(" ");
+      return `<button type="button" class="${classes}" data-calendar-day="${iso}">${current.getDate()}</button>`;
+    }).join("");
+
+    picker.innerHTML = `
+      <div class="calendar-shell">
+        <div class="calendar-head">
+          <button type="button" class="calendar-nav" data-calendar-nav="-1" aria-label="Mes anterior">‹</button>
+          <strong>${monthNames[month]} de ${year}</strong>
+          <button type="button" class="calendar-nav" data-calendar-nav="1" aria-label="Proximo mes">›</button>
+        </div>
+        <div class="calendar-weekdays">${weekDays.map((day) => `<span>${day}</span>`).join("")}</div>
+        <div class="calendar-grid">${dayButtons}</div>
+        <div class="calendar-foot">
+          <button type="button" class="calendar-foot-btn" data-calendar-action="clear">Limpar</button>
+          <button type="button" class="calendar-foot-btn" data-calendar-action="today">Hoje</button>
+        </div>
+      </div>
+    `;
+  };
+
+  fields.forEach((field) => {
+    setFieldValue(field, field.hidden.value);
+
+    field.display.addEventListener("focus", () => openPicker(field));
+    field.display.addEventListener("input", () => {
+      field.display.value = maskDisplayDate(field.display.value);
+    });
+    field.display.addEventListener("blur", () => {
+      const iso = parseDisplayDate(field.display.value);
+      setFieldValue(field, iso);
+    });
+    field.display.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        openPicker(field);
+      }
+    });
+  });
+
+  form.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-date-button]");
+    if (!button) return;
+    const hidden = form.querySelector(`#${button.dataset.dateButton}`);
+    const field = fields.find((item) => item.hidden === hidden);
+    if (field) openPicker(field);
+  });
+
+  picker.addEventListener("click", (event) => {
+    const nav = event.target.closest("[data-calendar-nav]");
+    if (nav) {
+      state.viewDate.setMonth(state.viewDate.getMonth() + Number(nav.dataset.calendarNav));
+      renderPicker();
+      return;
+    }
+    const day = event.target.closest("[data-calendar-day]");
+    if (day && state.activeField) {
+      setFieldValue(state.activeField, day.dataset.calendarDay);
+      closePicker();
+      return;
+    }
+    const action = event.target.closest("[data-calendar-action]");
+    if (!action || !state.activeField) return;
+    if (action.dataset.calendarAction === "clear") {
+      setFieldValue(state.activeField, "");
+      closePicker();
+      return;
+    }
+    if (action.dataset.calendarAction === "today") {
+      setFieldValue(state.activeField, isoFromDate(new Date()));
+      closePicker();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (picker.hidden) return;
+    if (event.target.closest(".date-field") || event.target.closest(".history-date-picker")) return;
+    closePicker();
+  });
+
+  window.addEventListener("resize", closePicker);
+  window.addEventListener("scroll", closePicker, true);
+}
+
 function card(item) {
   return `<article class="occurrence-card ${item.status === "Nova" ? "nova" : ""}" data-id="${item.id}">
     <div class="card-head">
@@ -365,6 +553,7 @@ async function initCentral() {
 
 async function initHistory() {
   const form = $("#filters");
+  initHistoryDatePickers(form);
   const render = async () => {
     const { occurrences } = await api(`/api/occurrences?${qsFromForm(form)}`);
     $("#historyRows").innerHTML = occurrences.map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.status}</td><td>${escapeHtml(r.description)}</td></tr>`).join("");
