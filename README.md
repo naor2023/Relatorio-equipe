@@ -5,11 +5,11 @@ Sistema web para vigias/controladores registrarem ocorrencias e para a Central d
 ## Tecnologia
 
 - Backend local: Node.js 24 nativo
-- Banco: SQLite nativo do Node (`data/ocorrencias.sqlite`)
+- Banco: SQLite nativo do Node (`data/ocorrencias.sqlite` no local)
 - Tempo real local: Server-Sent Events
 - Tempo real no Vercel: atualizacao automatica por consulta a cada 3 segundos
 - Frontend: HTML, CSS e JavaScript puro
-- Anexos: foto ou video salvo em `public/uploads`
+- Anexos: foto ou video salvo em storage local persistente
 
 ## Como rodar
 
@@ -41,6 +41,26 @@ https://relatorio-equipe.onrender.com
 
 No plano gratuito, o Render pode "dormir" quando fica sem uso. O primeiro acesso depois de um tempo pode demorar cerca de 50 segundos.
 
+## Persistencia profissional no Render
+
+Para manter o historico e os anexos por anos sem resetar a cada deploy, o projeto agora esta preparado para usar disco persistente no Render.
+
+- Banco SQLite: `APP_DATA_DIR/database/ocorrencias.sqlite`
+- Anexos: `APP_DATA_DIR/uploads`
+- Health check: `/healthz`
+
+O `render.yaml` ficou pronto para:
+
+- usar plano `starter`
+- montar disco persistente em `/var/data`
+- definir `APP_DATA_DIR=/var/data`
+
+Importante:
+
+- sem disco persistente, o filesystem do Render e efemero
+- o plano gratuito nao atende esse requisito de banco permanente
+- o proximo degrau de robustez, se voces quiserem no futuro, e migrar para Postgres gerenciado e storage dedicado para anexos
+
 ## Como subir no GitHub
 
 ```powershell
@@ -63,7 +83,7 @@ git push -u origin main
 
 O projeto ja possui `vercel.json` e a pasta `api/`, entao a Vercel vai servir as paginas HTML/CSS/JS da raiz e as rotas `/api/...`.
 
-Importante: a versao da Vercel esta pronta para demonstracao, mas usa memoria da funcao serverless. Isso significa que os dados podem resetar quando a Vercel reiniciar a funcao. Para uso real em producao, o proximo passo e ligar um banco externo, como Vercel Postgres, Neon, Supabase, PostgreSQL interno ou MySQL, e um storage externo para anexos.
+Importante: a versao da Vercel esta pronta para demonstracao, mas usa memoria da funcao serverless. Isso significa que os dados podem resetar quando a Vercel reiniciar a funcao. Para uso real em producao, use o deploy do Render com disco persistente ou ligue um banco externo, como Vercel Postgres, Neon, Supabase, PostgreSQL interno ou MySQL, e um storage externo para anexos.
 
 ## Telas
 
@@ -94,5 +114,5 @@ Importante: a versao da Vercel esta pronta para demonstracao, mas usa memoria da
 - Troca obrigatoria das senhas iniciais.
 - Auditoria detalhada de alteracoes.
 - Deploy em servidor interno com HTTPS.
-- Migracao para PostgreSQL/Vercel Postgres para producao.
-- Storage externo para anexos em producao.
+- Migracao para PostgreSQL/Vercel Postgres para alta disponibilidade.
+- Storage externo para anexos em producao com volume maior.

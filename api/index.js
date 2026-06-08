@@ -130,6 +130,10 @@ module.exports = async function handler(req, res) {
   const pathname = url.pathname.replace(/^\/api\/index/, "").replace(/^\/api/, "/api");
 
   try {
+    if (req.method === "GET" && pathname === "/healthz") {
+      return send(res, 200, { ok: true, mode: "serverless-demo" });
+    }
+
     if (req.method === "POST" && pathname === "/api/login") {
       const data = await body(req);
       const user = state.users.find((u) => u.username === data.username && u.active);
@@ -156,8 +160,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "GET" && pathname === "/api/admin") {
-      requireRole(req, res, ["admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       return send(res, 200, {
         users: state.users.map(({ password_hash, ...u }) => u),
         locations: state.locations.map((name, index) => ({ id: index + 1, name, active: 1 })),
@@ -166,8 +170,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "POST" && pathname === "/api/admin/users") {
-      requireRole(req, res, ["admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       const data = await body(req);
       if (!data.name || !data.username || !data.password || !["vigia", "central", "admin"].includes(data.role)) return send(res, 400, { error: "Dados do usuario invalidos." });
       addUser(data.name.trim(), data.username.trim(), data.password, data.role);
@@ -175,8 +179,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "POST" && pathname === "/api/admin/locations") {
-      requireRole(req, res, ["admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       const data = await body(req);
       if (!data.name) return send(res, 400, { error: "Informe o local." });
       state.locations.push(data.name.trim());
@@ -184,8 +188,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "POST" && pathname === "/api/admin/types") {
-      requireRole(req, res, ["admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       const data = await body(req);
       if (!data.name) return send(res, 400, { error: "Informe o tipo." });
       state.types.push(data.name.trim());
@@ -219,15 +223,15 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "GET" && pathname === "/api/occurrences") {
-      requireRole(req, res, ["central", "admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       return send(res, 200, { occurrences: filteredOccurrences(url) });
     }
 
     const match = pathname.match(/^\/api\/occurrences\/(\d+)$/);
     if (match && req.method === "GET") {
-      requireRole(req, res, ["central", "admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       const item = occurrenceById(Number(match[1]));
       return item ? send(res, 200, { occurrence: item }) : send(res, 404, { error: "Ocorrencia nao encontrada." });
     }
@@ -246,8 +250,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "GET" && pathname === "/api/export.csv") {
-      requireRole(req, res, ["central", "admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       const esc = (v) => `"${String(v ?? "").replaceAll('"', '""')}"`;
       const rows = filteredOccurrences(url);
       const csv = ["Numero,Data,Colaborador,Local,Tipo,Descricao,Status", ...rows.map((r) => [r.id, r.created_at, r.collaborator_name, r.location, r.type, r.description, r.status].map(esc).join(","))].join("\r\n");
@@ -257,8 +261,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (req.method === "GET" && (pathname === "/api/relatorio" || pathname === "/relatorio.html")) {
-      requireRole(req, res, ["central", "admin"]);
-      if (res.writableEnded) return;
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       const tr = filteredOccurrences(url).map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.description}</td><td>${r.status}</td></tr>`).join("");
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.end(`<!doctype html><html><head><meta charset="utf-8"><title>Relatorio</title><style>body{font-family:Arial;margin:32px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ccc;padding:8px;text-align:left}th{background:#111827;color:white}</style></head><body><h1>Relatorio de Ocorrencias</h1><p>Use Ctrl+P e escolha salvar como PDF.</p><table><thead><tr><th>N.</th><th>Data</th><th>Colaborador</th><th>Local</th><th>Tipo</th><th>Descricao</th><th>Status</th></tr></thead><tbody>${tr}</tbody></table><script>print()</script></body></html>`);

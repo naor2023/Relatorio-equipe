@@ -2,9 +2,16 @@ services:
   - type: web
     name: relatorio-equipe
     env: node
-    plan: free
+    plan: starter
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /healthz
+    disk:
+      name: relatorio-equipe-data
+      mountPath: /var/data
+      sizeGB: 10
     envVars:
       - key: NODE_VERSION
         value: 24.14.0
+      - key: APP_DATA_DIR
+        value: /var/data

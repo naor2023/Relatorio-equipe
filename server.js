@@ -6,8 +6,10 @@ const { DatabaseSync } = require("node:sqlite");
 
 const ROOT = __dirname;
 const PUBLIC = ROOT;
-const DATA = path.join(ROOT, "data");
-const UPLOADS = path.join(ROOT, "public", "uploads");
+const STORAGE_ROOT = process.env.APP_DATA_DIR ? path.resolve(process.env.APP_DATA_DIR) : null;
+const DATA = STORAGE_ROOT ? path.join(STORAGE_ROOT, "database") : path.join(ROOT, "data");
+const UPLOADS = STORAGE_ROOT ? path.join(STORAGE_ROOT, "uploads") : path.join(DATA, "uploads");
+const LEGACY_UPLOADS = path.join(ROOT, "public", "uploads");
 const DB_FILE = path.join(DATA, "ocorrencias.sqlite");
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
@@ -16,6 +18,7 @@ const STATUSES = ["Nova", "Em atendimento", "Resolvida", "Cancelada"];
 
 fs.mkdirSync(DATA, { recursive: true });
 fs.mkdirSync(UPLOADS, { recursive: true });
+fs.mkdirSync(LEGACY_UPLOADS, { recursive: true });
 
 const db = new DatabaseSync(DB_FILE);
 db.exec(`
@@ -149,6 +152,24 @@ function redirect(res, location) {
   res.end();
 }
 
+function contentType(filePath) {
+  const types = {
+    ".html": "text/html",
+    ".css": "text/css",
+    ".js": "text/javascript",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".pdf": "application/pdf"
+  };
+  return `${types[path.extname(filePath).toLowerCase()] || "application/octet-stream"}; charset=utf-8`;
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let body = "";
@@ -168,7 +189,7 @@ function requireRole(req, res, roles) {
   const user = currentUser(req);
   if (!user) {
     if (req.url.startsWith("/api/")) json(res, 401, { error: "Login necessario." });
-    else redirect(res, "/");
+    else redirect(res, "/login.html");
     return null;
   }
   if (!roles.includes(user.role)) {
@@ -206,12 +227,26 @@ function saveAttachment(occurrenceId, attachment) {
 function serveStatic(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname.startsWith("/api/") || url.pathname === "/events") return false;
+  if (url.pathname.startsWith("/uploads/")) {
+    const uploadName = decodeURIComponent(url.pathname.slice("/uploads/".length));
+    const candidates = [
+      path.normalize(path.join(UPLOADS, uploadName)),
+      path.normalize(path.join(LEGACY_UPLOADS, uploadName))
+    ];
+    const uploadPath = candidates.find((candidate) => (
+      (candidate.startsWith(UPLOADS) || candidate.startsWith(LEGACY_UPLOADS)) &&
+      fs.existsSync(candidate)
+    ));
+    if (!uploadPath) return false;
+    res.writeHead(200, { "Content-Type": contentType(uploadPath) });
+    fs.createReadStream(uploadPath).pipe(res);
+    return true;
+  }
   let filePath = path.normalize(path.join(PUBLIC, decodeURIComponent(url.pathname)));
   if (!filePath.startsWith(PUBLIC)) return json(res, 403, { error: "Acesso negado." });
   if (fs.statSync(filePath, { throwIfNoEntry: false })?.isDirectory()) filePath = path.join(filePath, "index.html");
   if (!fs.existsSync(filePath)) return false;
-  const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".mp4": "video/mp4" };
-  res.writeHead(200, { "Content-Type": `${types[path.extname(filePath).toLowerCase()] || "application/octet-stream"}; charset=utf-8` });
+  res.writeHead(200, { "Content-Type": contentType(filePath) });
   fs.createReadStream(filePath).pipe(res);
   return true;
 }
@@ -238,6 +273,11 @@ function filteredOccurrences(url) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   try {
+    if (req.method === "GET" && url.pathname === "/healthz") {
+      db.prepare("SELECT 1 AS ok").get();
+      return json(res, 200, { ok: true, database: DB_FILE, uploads: UPLOADS });
+    }
+
     if (req.method === "GET" && url.pathname === "/events") {
       const user = requireRole(req, res, ["central", "admin"]);
       if (!user) return;
@@ -282,7 +322,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && url.pathname === "/api/admin") {
-      requireRole(req, res, ["admin"]);
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       return json(res, 200, {
         users: db.prepare("SELECT id, name, username, role, active, created_at FROM users ORDER BY name").all(),
         locations: db.prepare("SELECT * FROM locations ORDER BY name").all(),
@@ -291,7 +332,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/admin/users") {
-      requireRole(req, res, ["admin"]);
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       const body = await readBody(req);
       if (!body.name || !body.username || !body.password || !["vigia", "central", "admin"].includes(body.role)) {
         return json(res, 400, { error: "Dados do usuario invalidos." });
@@ -302,7 +344,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/admin/locations") {
-      requireRole(req, res, ["admin"]);
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       const body = await readBody(req);
       if (!body.name) return json(res, 400, { error: "Informe o local." });
       db.prepare("INSERT INTO locations (name) VALUES (?)").run(body.name.trim());
@@ -310,7 +353,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && url.pathname === "/api/admin/types") {
-      requireRole(req, res, ["admin"]);
+      const user = requireRole(req, res, ["admin"]);
+      if (!user) return;
       const body = await readBody(req);
       if (!body.name) return json(res, 400, { error: "Informe o tipo." });
       db.prepare("INSERT INTO occurrence_types (name) VALUES (?)").run(body.name.trim());
@@ -331,13 +375,15 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && url.pathname === "/api/occurrences") {
-      requireRole(req, res, ["central", "admin"]);
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       return json(res, 200, { occurrences: filteredOccurrences(url) });
     }
 
     const occurrenceMatch = url.pathname.match(/^\/api\/occurrences\/(\d+)$/);
     if (occurrenceMatch && req.method === "GET") {
-      requireRole(req, res, ["central", "admin"]);
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       const item = occurrenceById(Number(occurrenceMatch[1]));
       return item ? json(res, 200, { occurrence: item }) : json(res, 404, { error: "Ocorrencia nao encontrada." });
     }
@@ -356,7 +402,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && url.pathname === "/api/export.csv") {
-      requireRole(req, res, ["central", "admin"]);
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       const rows = filteredOccurrences(url);
       const esc = (v) => `"${String(v ?? "").replaceAll('"', '""')}"`;
       const csv = ["Numero,Data,Colaborador,Local,Tipo,Descricao,Status", ...rows.map((r) => [r.id, r.created_at, r.collaborator_name, r.location, r.type, r.description, r.status].map(esc).join(","))].join("\r\n");
@@ -366,7 +413,8 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && (url.pathname === "/relatorio.html" || url.pathname === "/api/relatorio")) {
-      requireRole(req, res, ["central", "admin"]);
+      const user = requireRole(req, res, ["central", "admin"]);
+      if (!user) return;
       const rows = filteredOccurrences(url);
       const tr = rows.map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.description}</td><td>${r.status}</td></tr>`).join("");
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
