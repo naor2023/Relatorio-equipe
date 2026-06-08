@@ -50,6 +50,29 @@ function wireLogout() {
   });
 }
 
+function wireAttachmentLabels() {
+  const attachmentInput = $("#attachmentInput");
+  const attachmentName = $("#attachmentName");
+  const cameraInput = $("#cameraInput");
+  const cameraAttachmentName = $("#cameraAttachmentName");
+
+  attachmentInput?.addEventListener("change", () => {
+    attachmentName.textContent = attachmentInput.files[0]?.name || "Nenhum arquivo selecionado.";
+    if (attachmentInput.files[0] && cameraInput) {
+      cameraInput.value = "";
+      if (cameraAttachmentName) cameraAttachmentName.textContent = "Nenhuma foto capturada.";
+    }
+  });
+
+  cameraInput?.addEventListener("change", () => {
+    cameraAttachmentName.textContent = cameraInput.files[0]?.name || "Nenhuma foto capturada.";
+    if (cameraInput.files[0] && attachmentInput) {
+      attachmentInput.value = "";
+      if (attachmentName) attachmentName.textContent = "Nenhum arquivo selecionado.";
+    }
+  });
+}
+
 function qsFromForm(form) {
   const params = new URLSearchParams(new FormData(form));
   for (const [key, val] of [...params.entries()]) if (!val) params.delete(key);
@@ -206,6 +229,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   await loadMe();
   wireLogout();
+  wireAttachmentLabels();
   await fillOptions().catch(() => {});
   if ($("#occurrenceForm")) {
     $("#occurrenceForm").addEventListener("submit", async (ev) => {
@@ -218,6 +242,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         await api("/api/occurrences", { method: "POST", body: JSON.stringify(payload) });
         form.reset();
+        if ($("#attachmentName")) $("#attachmentName").textContent = "Nenhum arquivo selecionado.";
+        if ($("#cameraAttachmentName")) $("#cameraAttachmentName").textContent = "Nenhuma foto capturada.";
         $("#formMessage").textContent = "Ocorrencia enviada.";
       } catch (error) {
         $("#formMessage").textContent = error.message;

@@ -33,12 +33,22 @@
         <datalist id="locationSuggestions"></datalist>
         <datalist id="typeSuggestions"></datalist>
         <label>Descricao detalhada<textarea name="description" rows="6" required></textarea></label>
-        <label class="upload-box">
+        <div class="upload-box">
           <span>Anexo opcional</span>
-          <input name="attachment" type="file" accept="image/*,video/*">
-          <input name="camera_attachment" type="file" accept="image/*" capture="environment">
-          <small>Voce pode escolher um arquivo ou abrir a camera do celular para tirar a foto na hora.</small>
-        </label>
+          <div class="upload-option">
+            <strong>Escolher imagem ou video</strong>
+            <label class="file-trigger" for="attachmentInput">Abrir galeria ou arquivos</label>
+            <input id="attachmentInput" name="attachment" type="file" accept="image/*,video/*">
+            <small id="attachmentName">Nenhum arquivo selecionado.</small>
+          </div>
+          <div class="upload-option">
+            <strong>Tirar foto agora</strong>
+            <label class="file-trigger camera-trigger" for="cameraInput">Abrir camera do celular</label>
+            <input id="cameraInput" name="camera_attachment" type="file" accept="image/*" capture="environment">
+            <small id="cameraAttachmentName">Nenhuma foto capturada.</small>
+          </div>
+          <small>Use a camera para registrar a imagem na hora ou escolha um arquivo que ja esteja no aparelho.</small>
+        </div>
         <button class="primary" type="submit">Enviar ocorrencia</button>
         <output id="formMessage"></output>
       </form>
