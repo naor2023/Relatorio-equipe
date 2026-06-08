@@ -341,6 +341,9 @@ output { display: block; margin-top: 12px; color: var(--accent); }
   padding: 0;
   background: transparent;
 }
+.upload-box input + input {
+  margin-top: 12px;
+}
 .upload-box small {
   color: var(--muted);
   line-height: 1.45;

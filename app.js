@@ -32,11 +32,11 @@ function toDataUrl(file) {
 
 async function fillOptions() {
   const data = await api("/api/options");
-  document.querySelectorAll("select[name=location]").forEach((select) => {
-    select.innerHTML = data.locations.map((x) => `<option>${x}</option>`).join("");
+  document.querySelectorAll("#locationSuggestions").forEach((list) => {
+    list.innerHTML = data.locations.map((x) => `<option value="${escapeHtml(x)}"></option>`).join("");
   });
-  document.querySelectorAll("select[name=type]").forEach((select) => {
-    select.innerHTML = data.types.map((x) => `<option>${x}</option>`).join("");
+  document.querySelectorAll("#typeSuggestions").forEach((list) => {
+    list.innerHTML = data.types.map((x) => `<option value="${escapeHtml(x)}"></option>`).join("");
   });
   document.querySelectorAll("select[name=status]").forEach((select) => {
     select.innerHTML += data.statuses.map((x) => `<option>${x}</option>`).join("");
@@ -211,8 +211,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("#occurrenceForm").addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const form = ev.target;
-      const file = form.attachment.files[0];
+      const file = form.camera_attachment.files[0] || form.attachment.files[0];
       const payload = Object.fromEntries(new FormData(form));
+      delete payload.camera_attachment;
       payload.attachment = await toDataUrl(file);
       try {
         await api("/api/occurrences", { method: "POST", body: JSON.stringify(payload) });

@@ -27,14 +27,17 @@
       <form id="occurrenceForm">
         <label>Nome do colaborador<input name="collaborator_name" required></label>
         <div class="form-row">
-          <label>Local da ocorrencia<select name="location" required></select></label>
-          <label>Tipo da ocorrencia<select name="type" required></select></label>
+          <label>Local da ocorrencia<input name="location" list="locationSuggestions" placeholder="Digite o local" required></label>
+          <label>Tipo da ocorrencia<input name="type" list="typeSuggestions" placeholder="Digite o tipo da ocorrencia" required></label>
         </div>
+        <datalist id="locationSuggestions"></datalist>
+        <datalist id="typeSuggestions"></datalist>
         <label>Descricao detalhada<textarea name="description" rows="6" required></textarea></label>
         <label class="upload-box">
-          <span>Foto ou video</span>
+          <span>Anexo opcional</span>
           <input name="attachment" type="file" accept="image/*,video/*">
-          <small>Anexe somente se ajudar a Central na investigacao.</small>
+          <input name="camera_attachment" type="file" accept="image/*" capture="environment">
+          <small>Voce pode escolher um arquivo ou abrir a camera do celular para tirar a foto na hora.</small>
         </label>
         <button class="primary" type="submit">Enviar ocorrencia</button>
         <output id="formMessage"></output>
