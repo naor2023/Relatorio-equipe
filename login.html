@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login da Central</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-intro">
+      <div class="brand-lockup">
+        <div class="brand-mark">CM</div>
+        <div>
+          <strong>Central de Monitoramento</strong>
+          <span>Registro de Ocorrencias</span>
+        </div>
+      </div>
+      <h1>Controle operacional em tempo real</h1>
+      <p>A Central acompanha o registro enviado em campo, investiga as ocorrencias e preserva o historico completo.</p>
+      <div class="status-grid">
+        <div><span></span> Acompanhamento em tempo real</div>
+        <div><span></span> Investigacao centralizada</div>
+        <div><span></span> Historico permanente</div>
+      </div>
+      <div class="public-entry">
+        <strong>Registro publico</strong>
+        <p>Para registrar uma nova ocorrencia sem login, volte para o formulario principal.</p>
+        <a class="primary-link" href="/">Abrir formulario de registro</a>
+      </div>
+    </section>
+    <section class="login-card">
+      <div class="form-eyebrow">Acesso restrito</div>
+      <h2>Entrar na Central</h2>
+      <p>Use suas credenciais para acessar a Central de Monitoramento ou a administracao.</p>
+      <form id="loginForm">
+        <label>Usuario<input name="username" autocomplete="username" required></label>
+        <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary" type="submit">Entrar</button>
+        <output id="loginMessage"></output>
+      </form>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

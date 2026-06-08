@@ -3,46 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Registro de Ocorrencias</title>
+  <title>Registrar Ocorrencia</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
-<body class="login-page">
-  <main class="login-shell">
-    <section class="login-intro">
-      <div class="brand-lockup">
-        <div class="brand-mark">CM</div>
-        <div>
-          <strong>Central de Monitoramento</strong>
-          <span>Registro de Ocorrencias</span>
-        </div>
+<body>
+  <header class="topbar">
+    <strong>Registro de Ocorrencia</strong>
+    <nav>
+      <a href="/login.html">Acesso da Central</a>
+      <a class="topbar-login" href="/login.html">Fazer login</a>
+    </nav>
+  </header>
+  <main class="mobile-shell field-report-shell">
+    <section class="field-hero">
+      <div>
+        <span class="form-eyebrow">Registro rapido</span>
+        <h1>Nova ocorrencia</h1>
+        <p>Preencha apenas os dados essenciais e envie. A Central recebe o registro automaticamente para investigar.</p>
       </div>
-      <h1>Controle operacional em tempo real</h1>
-      <p>Os colaboradores registram a ocorrencia em poucos segundos e a Central acompanha, investiga e preserva o historico completo.</p>
-      <div class="status-grid">
-        <div><span></span> Ambiente seguro</div>
-        <div><span></span> Painel em tempo real</div>
-        <div><span></span> Historico auditavel</div>
-      </div>
-      <div class="public-entry">
-        <strong>Registro sem login</strong>
-        <p>O colaborador pode abrir o formulario publico e enviar a ocorrencia sem usuario e senha.</p>
-        <a class="primary-link" href="/vigia.html">Registrar ocorrencia sem login</a>
+      <div class="field-status">
+        <strong>Status inicial</strong>
+        <span>Nova ocorrencia</span>
       </div>
     </section>
-    <section class="login-card">
-      <div class="public-shortcut">
-        <strong>Quer apenas registrar?</strong>
-        <p>Use o formulario publico. O login abaixo e somente para Central e administracao.</p>
-        <a class="secondary-link" href="/vigia.html">Abrir formulario publico</a>
-      </div>
-      <div class="form-eyebrow">Acesso restrito</div>
-      <h2>Entrar na Central</h2>
-      <p>Use suas credenciais para acessar a Central de Monitoramento ou a administracao.</p>
-      <form id="loginForm">
-        <label>Usuario<input name="username" autocomplete="username" required></label>
-        <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
-        <button class="primary" type="submit">Entrar</button>
-        <output id="loginMessage"></output>
+    <section class="panel field-card">
+      <form id="occurrenceForm">
+        <label>Nome do colaborador<input name="collaborator_name" required></label>
+        <div class="form-row">
+          <label>Local da ocorrencia<input name="location" list="locationSuggestions" placeholder="Digite o local" required></label>
+          <label>Tipo da ocorrencia<input name="type" list="typeSuggestions" placeholder="Digite o tipo da ocorrencia" required></label>
+        </div>
+        <datalist id="locationSuggestions"></datalist>
+        <datalist id="typeSuggestions"></datalist>
+        <label>Descricao detalhada<textarea name="description" rows="6" required></textarea></label>
+        <div class="upload-box">
+          <span>Anexo opcional</span>
+          <div class="upload-option">
+            <strong>Escolher imagem ou video</strong>
+            <label class="file-trigger" for="attachmentInput">Abrir galeria ou arquivos</label>
+            <input id="attachmentInput" name="attachment" type="file" accept="image/*,video/*">
+            <small id="attachmentName">Nenhum arquivo selecionado.</small>
+          </div>
+          <div class="upload-option">
+            <strong>Tirar foto agora</strong>
+            <label class="file-trigger camera-trigger" for="cameraInput">Abrir camera do celular</label>
+            <input id="cameraInput" name="camera_attachment" type="file" accept="image/*" capture="environment">
+            <small id="cameraAttachmentName">Nenhuma foto capturada.</small>
+          </div>
+          <small>Use a camera para registrar a imagem na hora ou escolha um arquivo que ja esteja no aparelho.</small>
+        </div>
+        <button class="primary" type="submit">Enviar ocorrencia</button>
+        <output id="formMessage"></output>
       </form>
     </section>
   </main>

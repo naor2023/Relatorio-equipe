@@ -13,8 +13,8 @@ const api = async (url, options = {}) => {
 async function loadMe() {
   const { user } = await api("/api/me");
   const protectedPaths = new Set(["/central.html", "/historico.html", "/admin.html"]);
-  if (!user && protectedPaths.has(location.pathname)) location.href = "/";
-  if (user && location.pathname === "/") location.href = "/central.html";
+  if (!user && protectedPaths.has(location.pathname)) location.href = "/login.html";
+  if (user && location.pathname === "/login.html") location.href = "/central.html";
   if (user && location.pathname === "/admin.html" && user.role !== "admin") location.href = "/central.html";
   if (user?.role !== "admin") document.querySelectorAll("[data-admin]").forEach((el) => el.remove());
   return user;
