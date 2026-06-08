@@ -32,12 +32,6 @@ function toDataUrl(file) {
 
 async function fillOptions() {
   const data = await api("/api/options");
-  document.querySelectorAll("#locationSuggestions").forEach((list) => {
-    list.innerHTML = data.locations.map((x) => `<option value="${escapeHtml(x)}"></option>`).join("");
-  });
-  document.querySelectorAll("#typeSuggestions").forEach((list) => {
-    list.innerHTML = data.types.map((x) => `<option value="${escapeHtml(x)}"></option>`).join("");
-  });
   document.querySelectorAll("select[name=status]").forEach((select) => {
     select.innerHTML += data.statuses.map((x) => `<option>${x}</option>`).join("");
   });
