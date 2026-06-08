@@ -94,11 +94,15 @@ button:hover {
   padding: 42px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 34px;
   background:
     linear-gradient(rgba(9,17,31,.52), rgba(9,17,31,.86)),
     repeating-linear-gradient(90deg, rgba(148,163,184,.08) 0 1px, transparent 1px 72px),
     repeating-linear-gradient(0deg, rgba(148,163,184,.06) 0 1px, transparent 1px 72px);
+}
+.login-intro-copy {
+  max-width: 520px;
 }
 .brand-lockup {
   display: flex;
