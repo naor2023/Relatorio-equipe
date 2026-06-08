@@ -174,6 +174,8 @@ function updateMetrics(items) {
 
 let soundEnabled = false;
 let pollingTimer = null;
+let titleFlashTimer = null;
+const defaultTitle = document.title;
 function beep() {
   if (!soundEnabled) return;
   const ctx = new AudioContext();
@@ -185,6 +187,62 @@ function beep() {
   gain.connect(ctx.destination);
   osc.start();
   setTimeout(() => { osc.stop(); ctx.close(); }, 220);
+}
+
+function showToast(message) {
+  const stack = $("#toastStack");
+  if (!stack) return;
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  stack.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    setTimeout(() => toast.remove(), 220);
+  }, 4500);
+}
+
+function flashTitle(message) {
+  if (document.visibilityState === "visible") return;
+  if (titleFlashTimer) clearInterval(titleFlashTimer);
+  let showAlert = true;
+  titleFlashTimer = setInterval(() => {
+    document.title = showAlert ? message : defaultTitle;
+    showAlert = !showAlert;
+  }, 900);
+}
+
+function stopTitleFlash() {
+  if (!titleFlashTimer) return;
+  clearInterval(titleFlashTimer);
+  titleFlashTimer = null;
+  document.title = defaultTitle;
+}
+
+async function enableBrowserNotifications() {
+  if (!("Notification" in window)) {
+    showToast("Este navegador nao suporta notificacoes do sistema.");
+    return "unsupported";
+  }
+  if (Notification.permission === "granted") return "granted";
+  const permission = await Notification.requestPermission();
+  return permission;
+}
+
+function notifyOccurrence(item) {
+  const message = `Nova ocorrencia: ${item.type} em ${item.location}`;
+  showToast(message);
+  flashTitle("Nova ocorrencia recebida");
+  if ("Notification" in window && Notification.permission === "granted") {
+    const notification = new Notification("Nova ocorrencia recebida", {
+      body: `${item.collaborator_name} registrou ${item.type} em ${item.location}.`,
+      tag: `occurrence-${item.id}`
+    });
+    notification.onclick = () => {
+      window.focus();
+      stopTitleFlash();
+    };
+  }
 }
 
 async function openDetail(id) {
@@ -227,6 +285,22 @@ async function loadCentral() {
 
 async function initCentral() {
   await loadCentral();
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") stopTitleFlash();
+  });
+  $("#notifyBtn")?.addEventListener("click", async () => {
+    const permission = await enableBrowserNotifications();
+    if (permission === "granted") {
+      $("#notifyBtn").textContent = "Notificacoes ativas";
+      showToast("Notificacoes do navegador ativadas.");
+      return;
+    }
+    if (permission === "denied") {
+      showToast("As notificacoes foram bloqueadas no navegador.");
+      return;
+    }
+    if (permission === "unsupported") return;
+  });
   $("#soundBtn")?.addEventListener("click", () => {
     soundEnabled = true;
     $("#soundBtn").textContent = "Alerta sonoro ativo";
@@ -237,7 +311,12 @@ async function initCentral() {
     if (id) openDetail(id);
   });
   const events = new EventSource("/events");
-  events.addEventListener("occurrence-created", async () => { beep(); await loadCentral(); });
+  events.addEventListener("occurrence-created", async (event) => {
+    const item = JSON.parse(event.data);
+    beep();
+    notifyOccurrence(item);
+    await loadCentral();
+  });
   events.addEventListener("occurrence-updated", loadCentral);
   events.onerror = () => {
     if ($("#liveState")) $("#liveState").textContent = "Online";

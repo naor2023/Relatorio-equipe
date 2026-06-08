@@ -422,8 +422,35 @@ output { display: block; margin-top: 12px; color: var(--accent); }
   min-height: 70vh;
   padding: 20px;
 }
+.board-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .board-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
 .occurrence-list { display: grid; gap: 12px; }
+.toast-stack {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  display: grid;
+  gap: 10px;
+  width: min(360px, calc(100vw - 24px));
+}
+.toast {
+  border: 1px solid rgba(34,197,94,.28);
+  background: rgba(6, 18, 14, .96);
+  color: #eafff0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+.toast-out {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease;
+}
 .occurrence-card {
   display: grid;
   gap: 8px;

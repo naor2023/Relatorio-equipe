@@ -21,11 +21,15 @@
     <section class="occurrence-board">
       <div class="board-head">
         <h1>Ocorrencias em tempo real</h1>
-        <button id="soundBtn">Ativar alerta sonoro</button>
+        <div class="board-actions">
+          <button id="notifyBtn" type="button">Ativar notificacoes</button>
+          <button id="soundBtn" type="button">Ativar alerta sonoro</button>
+        </div>
       </div>
       <div id="occurrenceList" class="occurrence-list"></div>
     </section>
   </main>
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
   <dialog id="detailDialog">
     <form method="dialog" class="dialog-form">
       <button class="close">Fechar</button>
