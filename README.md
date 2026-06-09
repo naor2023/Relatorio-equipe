@@ -9,14 +9,14 @@ Sistema web para vigias/controladores registrarem ocorrencias e para a Central d
 - Tempo real local: Server-Sent Events
 - Tempo real no Vercel: atualizacao automatica por consulta a cada 3 segundos
 - Frontend: HTML, CSS e JavaScript puro
-- Anexos: foto ou video salvo em storage local persistente
+- Anexos: foto ou video salvo em storage local
 
 ## Como rodar
 
 1. Abra o terminal nesta pasta:
 
 ```powershell
-cd "C:\Users\sandro.camargo\OneDrive - ANIMALIA EMPREENDIMENTOS E PARTICIPACOES SA\Área de Trabalho\PASTAS-AREA DE TRABALHO\curso_python\sandro\NOVO PROGRAMA"
+cd "C:\Users\sandro.camargo\OneDrive - ANIMALIA EMPREENDIMENTOS E PARTICIPACOES SA\Área de Trabalho\PASTAS-AREA DE TRABALHO\curso_python\sandro\Relatorio-equipe"
 ```
 
 2. Inicie o sistema:
@@ -41,25 +41,43 @@ https://relatorio-equipe.onrender.com
 
 No plano gratuito, o Render pode "dormir" quando fica sem uso. O primeiro acesso depois de um tempo pode demorar cerca de 50 segundos.
 
-## Persistencia profissional no Render
+## Persistencia gratis com Render + Neon/Supabase
 
-Para manter o historico e os anexos por anos sem resetar a cada deploy, o projeto agora esta preparado para usar disco persistente no Render.
+Para testar sem pagar plano no Render, use:
 
-- Banco SQLite: `APP_DATA_DIR/database/ocorrencias.sqlite`
-- Anexos: `APP_DATA_DIR/uploads`
+- Render Free: aplicacao Node.js
+- Neon ou Supabase Free: banco PostgreSQL
+- GitHub: codigo e backup/exportacoes
+
+O projeto usa PostgreSQL automaticamente quando a variavel `DATABASE_URL` existe. Sem essa variavel, ele usa SQLite local em `data/ocorrencias.sqlite`.
+
+- Banco em producao: `DATABASE_URL`
+- Banco local: `data/ocorrencias.sqlite`
+- Anexos no Render Free: filesystem temporario
 - Health check: `/healthz`
 
 O `render.yaml` ficou pronto para:
 
-- usar plano `starter`
-- montar disco persistente em `/var/data`
-- definir `APP_DATA_DIR=/var/data`
+- usar plano `free`
+- instalar dependencias com `npm install`
+- iniciar com `npm start`
+- esperar a variavel secreta `DATABASE_URL`
+
+Passo a passo no Neon:
+
+1. Crie um projeto em https://neon.com.
+2. Copie a connection string do banco PostgreSQL.
+3. No Render, abra o servico e va em **Environment**.
+4. Adicione `DATABASE_URL` com a connection string do Neon.
+5. Faca um novo deploy e abra `/healthz`.
+6. O campo `database` deve aparecer como `postgres`.
 
 Importante:
 
-- sem disco persistente, o filesystem do Render e efemero
-- o plano gratuito nao atende esse requisito de banco permanente
-- o proximo degrau de robustez, se voces quiserem no futuro, e migrar para Postgres gerenciado e storage dedicado para anexos
+- sem `DATABASE_URL`, o Render Free volta para SQLite temporario e pode resetar
+- o historico fica permanente no Neon/Supabase
+- anexos enviados por foto/video ainda dependem de storage persistente; no Render Free eles podem sumir em redeploy/restart
+- o proximo passo de robustez e colocar anexos em storage externo ou hospedar tudo no PC fisico
 
 ## Como subir no GitHub
 
