@@ -561,7 +561,7 @@ async function initHistory() {
   initHistoryDatePickers(form);
   const render = async () => {
     const { occurrences } = await api(`/api/occurrences?${qsFromForm(form)}`);
-    $("#historyRows").innerHTML = occurrences.map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.status}</td><td>${escapeHtml(r.description)}</td>${isAdmin ? `<td><button type="button" class="danger small-action" data-delete-occurrence="${r.id}">Apagar</button></td>` : ""}</tr>`).join("");
+    $("#historyRows").innerHTML = occurrences.map((r) => `<tr><td data-label="N.">${r.id}</td><td data-label="Data">${r.created_at}</td><td data-label="Colaborador">${r.collaborator_name}</td><td data-label="Local">${r.location}</td><td data-label="Tipo">${r.type}</td><td data-label="Status">${r.status}</td><td data-label="Descricao">${escapeHtml(r.description)}</td>${isAdmin ? `<td data-label="Acoes"><button type="button" class="danger small-action" data-delete-occurrence="${r.id}">Apagar</button></td>` : ""}</tr>`).join("");
   };
   form.addEventListener("submit", (ev) => { ev.preventDefault(); render(); });
   $("#csvBtn").onclick = () => { location.href = `/api/export.csv?${qsFromForm(form)}`; };
@@ -603,7 +603,7 @@ async function initAdmin() {
     const data = await api("/api/admin");
     $("#userRows").innerHTML = data.users.map((u) => {
       const canRemove = u.active && u.id !== window.currentUser?.id;
-      return `<tr><td>${u.name}</td><td>${u.username}</td><td>${u.role}</td><td>${u.active ? "Sim" : "Nao"}</td><td class="action-cell"><button type="button" class="small-action" data-change-password="${u.id}">Senha</button><button type="button" class="danger small-action" data-delete-user="${u.id}" ${canRemove ? "" : "disabled"}>Remover</button></td></tr>`;
+      return `<tr><td data-label="Nome">${u.name}</td><td data-label="Usuario">${u.username}</td><td data-label="Perfil">${u.role}</td><td data-label="Ativo">${u.active ? "Sim" : "Nao"}</td><td data-label="Acoes" class="action-cell"><button type="button" class="small-action" data-change-password="${u.id}">Senha</button><button type="button" class="danger small-action" data-delete-user="${u.id}" ${canRemove ? "" : "disabled"}>Remover</button></td></tr>`;
     }).join("");
     $("#locationList").innerHTML = data.locations.map((x) => `<span>${x.name}</span>`).join("");
     $("#typeList").innerHTML = data.types.map((x) => `<span>${x.name}</span>`).join("");

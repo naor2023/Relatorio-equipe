@@ -703,31 +703,157 @@ dialog {
 }
 
 @media (max-width: 720px) {
+  body {
+    overflow-x: hidden;
+  }
   .login-shell { grid-template-columns: 1fr; }
   .login-intro { min-height: auto; padding: 28px; }
   .login-intro h1 { font-size: 34px; margin-top: 40px; }
   .login-card { border-left: 0; border-top: 1px solid rgba(148,163,184,.16); padding: 28px; }
   .status-grid { grid-template-columns: 1fr; }
-  .metric-strip { grid-template-columns: repeat(2, 1fr); }
   .topbar {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px 14px;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px 12px;
   }
   .topbar strong {
+    flex: 1 1 auto;
     font-size: 15px;
+    min-width: 0;
   }
   .topbar nav {
-    width: 100%;
-    justify-content: space-between;
-    gap: 8px;
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    gap: 6px;
   }
-  .topbar a {
-    padding: 9px 10px;
+  .topbar a,
+  .topbar button {
+    padding: 8px 9px;
     font-size: 14px;
   }
-  .dashboard { padding: 12px; }
+  .dashboard {
+    padding: 10px;
+  }
+  .metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .metric-strip div {
+    padding: 12px 14px;
+    min-width: 0;
+  }
+  .metric-strip span {
+    font-size: 28px;
+    line-height: 1;
+  }
+  .metric-strip small {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  .occurrence-board {
+    min-height: calc(100svh - 250px);
+    padding: 16px;
+  }
+  .board-head {
+    display: grid;
+    gap: 12px;
+  }
+  .board-head h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.15;
+  }
+  .board-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .board-actions button {
+    width: 100%;
+  }
+  .page {
+    padding: 10px;
+    justify-items: stretch;
+  }
+  .panel {
+    padding: 16px;
+    border-radius: 0;
+  }
+  .panel h1 {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+  .admin-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .admin-grid form {
+    padding: 14px;
+  }
+  .filters {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .filters button {
+    width: 100%;
+  }
+  .table-wrap {
+    overflow: visible;
+  }
+  table {
+    min-width: 0;
+  }
+  thead {
+    display: none;
+  }
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+  tbody {
+    display: grid;
+    gap: 10px;
+  }
+  tr {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(15,26,45,.74);
+    padding: 10px 12px;
+  }
+  td {
+    border: 0;
+    padding: 7px 0;
+  }
+  td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  td:not(:last-child) {
+    border-bottom: 1px solid rgba(148,163,184,.12);
+  }
+  .action-cell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .small-action {
+    width: 100%;
+  }
+  .chips {
+    gap: 7px;
+  }
+  .chips span {
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
   .field-report-shell { width: min(100%, calc(100vw - 16px)); grid-template-columns: 1fr; padding-top: 12px; }
   .field-card { padding: 14px 12px; border-radius: 10px; }
   .form-head { margin-bottom: 10px; }
