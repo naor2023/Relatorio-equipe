@@ -69,6 +69,30 @@ button:hover {
   font-weight: 700;
   box-shadow: 0 12px 30px rgba(34,197,94,.22);
 }
+.danger {
+  border-color: rgba(239,68,68,.45);
+  background: rgba(239,68,68,.12);
+  color: #fecaca;
+}
+.danger:hover {
+  border-color: rgba(239,68,68,.8);
+  background: rgba(239,68,68,.2);
+}
+.small-action {
+  min-width: 72px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.action-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: .55;
+  transform: none;
+}
 .login-page {
   min-height: 100vh;
   display: grid;

@@ -37,11 +37,13 @@
         <button class="primary">Filtrar</button>
         <button type="button" id="csvBtn">Exportar Excel/CSV</button>
         <button type="button" id="pdfBtn">Relatorio PDF</button>
+        <button type="button" id="deleteDayBtn" class="danger" data-admin>Apagar dia</button>
         <div id="historyDatePicker" class="history-date-picker" hidden></div>
       </form>
+      <output id="historyMessage"></output>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>N.</th><th>Data</th><th>Colaborador</th><th>Local</th><th>Tipo</th><th>Status</th><th>Descricao</th></tr></thead>
+          <thead><tr><th>N.</th><th>Data</th><th>Colaborador</th><th>Local</th><th>Tipo</th><th>Status</th><th>Descricao</th><th data-admin>Acoes</th></tr></thead>
           <tbody id="historyRows"></tbody>
         </table>
       </div>

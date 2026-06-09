@@ -12,6 +12,7 @@ const api = async (url, options = {}) => {
 
 async function loadMe() {
   const { user } = await api("/api/me");
+  window.currentUser = user;
   const protectedPaths = new Set(["/central.html", "/historico.html", "/admin.html"]);
   if (!user && protectedPaths.has(location.pathname)) location.href = "/login.html";
   if (user && location.pathname === "/login.html") location.href = "/central.html";
@@ -538,6 +539,8 @@ async function initCentral() {
     await loadCentral();
   });
   events.addEventListener("occurrence-updated", loadCentral);
+  events.addEventListener("occurrence-deleted", loadCentral);
+  events.addEventListener("occurrences-deleted", loadCentral);
   events.onerror = () => {
     if ($("#liveState")) $("#liveState").textContent = "Reconectando";
     if (!pollingTimer) pollingTimer = setInterval(loadCentral, 3000);
@@ -553,21 +556,55 @@ async function initCentral() {
 
 async function initHistory() {
   const form = $("#filters");
+  const isAdmin = window.currentUser?.role === "admin";
+  const historyMessage = $("#historyMessage");
   initHistoryDatePickers(form);
   const render = async () => {
     const { occurrences } = await api(`/api/occurrences?${qsFromForm(form)}`);
-    $("#historyRows").innerHTML = occurrences.map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.status}</td><td>${escapeHtml(r.description)}</td></tr>`).join("");
+    $("#historyRows").innerHTML = occurrences.map((r) => `<tr><td>${r.id}</td><td>${r.created_at}</td><td>${r.collaborator_name}</td><td>${r.location}</td><td>${r.type}</td><td>${r.status}</td><td>${escapeHtml(r.description)}</td>${isAdmin ? `<td><button type="button" class="danger small-action" data-delete-occurrence="${r.id}">Apagar</button></td>` : ""}</tr>`).join("");
   };
   form.addEventListener("submit", (ev) => { ev.preventDefault(); render(); });
   $("#csvBtn").onclick = () => { location.href = `/api/export.csv?${qsFromForm(form)}`; };
   $("#pdfBtn").onclick = () => { window.open(`/api/relatorio?${qsFromForm(form)}`, "_blank"); };
+  $("#deleteDayBtn")?.addEventListener("click", async () => {
+    const from = form.elements.from?.value;
+    const to = form.elements.to?.value;
+    const date = from || to;
+    if (!date || (from && to && from !== to)) {
+      historyMessage.textContent = "Escolha um unico dia nos filtros De/Ate para apagar.";
+      return;
+    }
+    if (!confirm(`Apagar todas as ocorrencias do dia ${formatDateForDisplay(date)}?`)) return;
+    try {
+      const result = await api(`/api/occurrences/day?date=${encodeURIComponent(date)}`, { method: "DELETE" });
+      historyMessage.textContent = `${result.count} ocorrencia(s) apagada(s).`;
+      await render();
+    } catch (error) {
+      historyMessage.textContent = error.message;
+    }
+  });
+  $("#historyRows").addEventListener("click", async (ev) => {
+    const id = ev.target.dataset.deleteOccurrence;
+    if (!id) return;
+    if (!confirm(`Apagar a ocorrencia numero ${id}?`)) return;
+    try {
+      await api(`/api/occurrences/${id}`, { method: "DELETE" });
+      historyMessage.textContent = "Ocorrencia apagada.";
+      await render();
+    } catch (error) {
+      historyMessage.textContent = error.message;
+    }
+  });
   await render();
 }
 
 async function initAdmin() {
   const render = async () => {
     const data = await api("/api/admin");
-    $("#userRows").innerHTML = data.users.map((u) => `<tr><td>${u.name}</td><td>${u.username}</td><td>${u.role}</td><td>${u.active ? "Sim" : "Nao"}</td></tr>`).join("");
+    $("#userRows").innerHTML = data.users.map((u) => {
+      const canRemove = u.active && u.id !== window.currentUser?.id;
+      return `<tr><td>${u.name}</td><td>${u.username}</td><td>${u.role}</td><td>${u.active ? "Sim" : "Nao"}</td><td class="action-cell"><button type="button" class="small-action" data-change-password="${u.id}">Senha</button><button type="button" class="danger small-action" data-delete-user="${u.id}" ${canRemove ? "" : "disabled"}>Remover</button></td></tr>`;
+    }).join("");
     $("#locationList").innerHTML = data.locations.map((x) => `<span>${x.name}</span>`).join("");
     $("#typeList").innerHTML = data.types.map((x) => `<span>${x.name}</span>`).join("");
   };
@@ -587,6 +624,26 @@ async function initAdmin() {
   submit($("#userForm"), "/api/admin/users");
   submit($("#locationForm"), "/api/admin/locations");
   submit($("#typeForm"), "/api/admin/types");
+  $("#userRows").addEventListener("click", async (ev) => {
+    const passwordId = ev.target.dataset.changePassword;
+    const deleteId = ev.target.dataset.deleteUser;
+    try {
+      if (passwordId) {
+        const password = prompt("Digite a nova senha do usuario:");
+        if (!password) return;
+        await api(`/api/admin/users/${passwordId}/password`, { method: "PATCH", body: JSON.stringify({ password }) });
+        $("#adminMessage").textContent = "Senha alterada com sucesso.";
+      }
+      if (deleteId) {
+        if (!confirm("Remover o acesso deste usuario?")) return;
+        await api(`/api/admin/users/${deleteId}`, { method: "DELETE" });
+        $("#adminMessage").textContent = "Usuario removido/desativado.";
+      }
+      await render();
+    } catch (error) {
+      $("#adminMessage").textContent = error.message;
+    }
+  });
   await render();
 }
 

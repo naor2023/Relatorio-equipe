@@ -330,6 +330,19 @@ async function occurrenceById(id) {
   return item;
 }
 
+function removeAttachmentFiles(attachments) {
+  for (const attachment of attachments) {
+    const fileName = String(attachment.file_path || "").replace(/^\/uploads\//, "");
+    if (!fileName || fileName.includes("/") || fileName.includes("\\")) continue;
+    for (const dir of [UPLOADS, LEGACY_UPLOADS]) {
+      const filePath = path.normalize(path.join(dir, fileName));
+      if (filePath.startsWith(dir) && fs.existsSync(filePath)) {
+        fs.rmSync(filePath, { force: true });
+      }
+    }
+  }
+}
+
 async function saveAttachment(occurrenceId, attachment) {
   if (!attachment || !attachment.dataUrl) return;
   const match = attachment.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
@@ -469,6 +482,27 @@ const server = http.createServer(async (req, res) => {
       return json(res, 201, { ok: true });
     }
 
+    const userPasswordMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/password$/);
+    if (userPasswordMatch && req.method === "PATCH") {
+      const user = await requireRole(req, res, ["admin"]);
+      if (!user) return;
+      const body = await readBody(req);
+      if (!body.password || String(body.password).length < 4) return json(res, 400, { error: "Informe uma senha com pelo menos 4 caracteres." });
+      await run("UPDATE users SET password_hash = ? WHERE id = ?", [hashPassword(body.password), Number(userPasswordMatch[1])]);
+      return json(res, 200, { ok: true });
+    }
+
+    const userDeleteMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)$/);
+    if (userDeleteMatch && req.method === "DELETE") {
+      const user = await requireRole(req, res, ["admin"]);
+      if (!user) return;
+      const id = Number(userDeleteMatch[1]);
+      if (id === user.id) return json(res, 400, { error: "Voce nao pode remover seu proprio acesso." });
+      await run("UPDATE users SET active = 0 WHERE id = ?", [id]);
+      await run("DELETE FROM sessions WHERE user_id = ?", [id]);
+      return json(res, 200, { ok: true });
+    }
+
     if (req.method === "POST" && url.pathname === "/api/admin/locations") {
       const user = await requireRole(req, res, ["admin"]);
       if (!user) return;
@@ -525,6 +559,34 @@ const server = http.createServer(async (req, res) => {
       const item = await occurrenceById(id);
       broadcast("occurrence-updated", item);
       return json(res, 200, { ok: true, occurrence: item });
+    }
+
+    if (occurrenceMatch && req.method === "DELETE") {
+      const user = await requireRole(req, res, ["admin"]);
+      if (!user) return;
+      const id = Number(occurrenceMatch[1]);
+      const attachments = await all("SELECT file_path FROM attachments WHERE occurrence_id = ?", [id]);
+      await run("DELETE FROM occurrences WHERE id = ?", [id]);
+      removeAttachmentFiles(attachments);
+      broadcast("occurrence-deleted", { id });
+      return json(res, 200, { ok: true });
+    }
+
+    if (req.method === "DELETE" && url.pathname === "/api/occurrences/day") {
+      const user = await requireRole(req, res, ["admin"]);
+      if (!user) return;
+      const date = url.searchParams.get("date");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "")) return json(res, 400, { error: "Informe uma data valida." });
+      const dateWhere = USE_POSTGRES ? "created_at::date = ?::date" : "date(created_at) = date(?)";
+      const occurrences = await all(`SELECT id FROM occurrences WHERE ${dateWhere}`, [date]);
+      const ids = occurrences.map((item) => item.id);
+      const attachments = ids.length
+        ? await all(`SELECT file_path FROM attachments WHERE occurrence_id IN (${ids.map(() => "?").join(",")})`, ids)
+        : [];
+      await run(`DELETE FROM occurrences WHERE ${dateWhere}`, [date]);
+      removeAttachmentFiles(attachments);
+      broadcast("occurrences-deleted", { date, count: ids.length });
+      return json(res, 200, { ok: true, count: ids.length });
     }
 
     if (req.method === "GET" && url.pathname === "/api/export.csv") {
