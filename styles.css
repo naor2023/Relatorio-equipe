@@ -226,6 +226,8 @@ button:disabled {
   margin-bottom: 10px;
 }
 .form-eyebrow {
+  display: inline-flex;
+  align-items: center;
   width: fit-content;
   margin-bottom: 18px;
   border: 1px solid rgba(34,197,94,.36);
@@ -321,7 +323,7 @@ output { display: block; margin-top: 12px; color: var(--accent); }
   margin-bottom: 18px;
 }
 .form-head h1 {
-  margin: 0 0 10px;
+  margin: 12px 0 10px;
   font-size: 34px;
   line-height: 1.05;
 }
