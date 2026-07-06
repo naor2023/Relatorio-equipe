@@ -28,7 +28,9 @@ if (USE_POSTGRES) {
   const { Pool } = require("pg");
   pgPool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false }
+    ssl: {
+      rejectUnauthorized: false
+    }
   });
 } else {
   const { DatabaseSync } = require("node:sqlite");
